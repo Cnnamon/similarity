@@ -31,18 +31,21 @@ args = parser.parse_args()
 
 checkpoint_dir = 'runtime_files/saved_model'
 checkpoint_auto_dir = 'runtime_files/auto_saved_model.h5'
-train_dir_a = '/opt/datasets/data/simulated_flight_1/train_a'
-valid_dir_a = '/opt/datasets/data/simulated_flight_1/valid_a'
 
-train_dir_p = '/opt/datasets/data/simulated_flight_1/train_p'
-valid_dir_p = '/opt/datasets/data/simulated_flight_1/valid_p'
+folder = "./data"
 
-train_dir_n = '/opt/datasets/data/simulated_flight_1/train_n'
-valid_dir_n = '/opt/datasets/data/simulated_flight_1/valid_n'
+train_dir_a = '{}/train_a'.format(folder)
+valid_dir_a = '{}/valid_a'.format(folder)
 
-test_dir_a = '/opt/datasets/data/simulated_flight_1/test_a'
-test_dir_p = '/opt/datasets/data/simulated_flight_1/test_p'
-test_dir_n = '/opt/datasets/data/simulated_flight_1/test_n'
+train_dir_p = '{}/train_p'.format(folder)
+valid_dir_p = '{}/valid_p'.format(folder)
+
+train_dir_n = '{}/train_n'.format(folder)
+valid_dir_n = '{}/valid_n'.format(folder)
+
+test_dir_a = '{}/test_a'.format(folder)
+test_dir_p = '{}/test_p'.format(folder)
+test_dir_n = '{}/test_n'.format(folder)
 
 argN = 64
 
@@ -205,20 +208,24 @@ def train_model():
   #train_generator = datagen.flow_from_directory(directory = args.train_dir, target_size = (224, 224), batch_size = args.batch_size, class_mode = 'categorical', shuffle = False)
   #valid_generator = datagen.flow_from_directory(directory = args.valid_dir, target_size = (224, 224), batch_size = args.batch_size, class_mode = 'categorical', shuffle = False)
  
-  cb_tensorboard = TensorBoard(log_dir = "./runtime_files/logs/{}".format(time()), histogram_freq = 2, write_graph = True, write_images = True)
+  #cb_tensorboard = TensorBoard(log_dir = "./runtime_files/logs/{}".format(time()), histogram_freq = 2, write_graph = True, write_images = True)
   cb_checkpoint = ModelCheckpoint(checkpoint_auto_dir, save_weights_only = False, period = 100, verbose = 1)
 
-  model.fit_generator(generator = train_generator_triplet(), steps_per_epoch = argN, epochs = args.epochs, validation_data = valid_generator_triplet(), validation_steps = 3, callbacks = [cb_tensorboard, cb_checkpoint])
+  model.fit_generator(generator = train_generator_triplet(), steps_per_epoch = argN, epochs = args.epochs, validation_data = valid_generator_triplet(), validation_steps = 3, callbacks = [cb_checkpoint])
   
   #tf.keras.experimental.export_saved_model(model, checkpoint_dir)
-  tf.saved_model.save(model, checkpoint_dir)
+  #print(dir(tf.saved_model))
+
+  model.save(checkpoint_dir, save_format='tf')
 
 def test_model():
   test_samples = len(os.listdir(test_dir_a + "/0"))
   #datagen = ImageDataGenerator()
   #test_generator = datagen.flow_from_directory(directory = args.test_dir, target_size = (224, 224), batch_size = test_samples, class_mode = 'categorical', shuffle = False)
   
-  model = tf.keras.experimental.load_from_saved_model(checkpoint_dir)
+  #model = tf.keras.experimental.load_from_saved_model(checkpoint_dir)
+  model = tf.keras.models.load_model(checkpoint_dir, compile=False)
+  model.compile(optimizer = optimizers.Adam(), loss = triplet_loss(), metrics = [pd(), nd()])
   #model = tf.saved_model.load(checkpoint_dir, tags = None)
 
   #model = make_model()
