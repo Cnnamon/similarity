@@ -22,7 +22,6 @@ print("TensorFlow version: " + tf.__version__)
 parser = argparse.ArgumentParser()
 parser.add_argument('-r', '--train-model', dest = 'train_model', action = 'store_true')
 parser.add_argument('-s', '--test-model', dest = 'test_model', action = 'store_true')
-parser.add_argument('-l', '--lc', dest = 'lc', type = int, default = 8)
 parser.add_argument('-b', '--batch-size', dest = 'batch_size', type = int, default = 3)
 parser.add_argument('-e', '--epochs', dest = 'epochs', type = int, default = 5)
 
