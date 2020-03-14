@@ -48,11 +48,17 @@ This file can be run with the following arguments:
 - ```-e {num}, --epochs {num}``` - amount of epochs to run training with. Only used when training.
 - ```-s, --test-model``` - test triplet network with images provided in ```test_data_folder``` config value.
 
+Example:
+```
+python top.py -r -e 16
+python top.py -s
+```
+
 Training logs can be viewed using tensorboard by running the following command:
 ```
 tensorboard --logdir=runtime_files/logs
 ```  
-An alternative is to simply run ```tb.sh``` from your terminal.
+An alternative way to launch tensorboard is to simply run ```tb.sh``` from your terminal.
 
 ### Disclaimer
 I am a complete novice in anything ML related and these changes are purely for ease of use from my own point of view. 
