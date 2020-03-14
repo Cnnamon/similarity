@@ -1,7 +1,8 @@
 runtime_files/*
 data/*
 log.txt
-.vscode/
+.vscode/settings.json
+.vscode/.ropeproject/
 
 # Standard python gitignore
 # Byte-compiled / optimized / DLL files
