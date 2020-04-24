@@ -7,7 +7,7 @@ from tensorflow.keras import backend, applications, optimizers
 from tensorflow.keras.models import Model, Sequential
 from tensorflow.keras.layers import Input, Dropout, Flatten, Dense, Reshape
 from tensorflow.keras.callbacks import Callback, TensorBoard, ModelCheckpoint
-from tensorflow.keras.preprocessing.image import ImageDataGenerator
+from tensorflow.keras.preprocessing.image import ImageDataGenerator, load_img
 from tensorflow.python.framework import ops
 
 import argparse
@@ -22,8 +22,9 @@ print("TensorFlow version: " + tf.__version__)
 parser = argparse.ArgumentParser()
 parser.add_argument('-r', '--train-model', dest = 'train_model', action = 'store_true')
 parser.add_argument('-s', '--test-model', dest = 'test_model', action = 'store_true')
+parser.add_argument('-l', '--lc', dest = 'lc', type = int, default = 8)
 parser.add_argument('-b', '--batch-size', dest = 'batch_size', type = int, default = 3)
-parser.add_argument('-e', '--epochs', dest = 'epochs', type = int, default = 5)
+parser.add_argument('-e', '--epochs', dest = 'epochs', type = int, default = 10)
 
 args = parser.parse_args()
 
@@ -48,6 +49,8 @@ valid_dir_negative = os.path.join(train_folder, 'valid_n')
 test_dir_anchor = os.path.join(test_folder, 'test_a')
 test_dir_positive = os.path.join(test_folder, 'test_p')
 test_dir_negative = os.path.join(test_folder, 'test_n')
+
+argN = 64
 
 def triplet_loss(N = argN, epsilon = 1e-6):
   def triplet_loss(y_true, y_pred):
@@ -78,7 +81,7 @@ def pd(N = argN, epsilon = 1e-6):
     return backend.mean(positive_distance)
   return pd
 
-def nd(N = argN, epsilon = 1e-06):
+def nd(N = argN, epsilon = 1e-6):
   def nd(y_true, y_pred):
     beta = N
     anchor = y_pred[0::3]
@@ -95,6 +98,8 @@ def make_model():
 
   base_model = applications.VGG16(include_top = False, weights = 'imagenet')
 
+  model_a = Sequential()
+
   l1_a = base_model.layers[0](input_a)
   l1_p = base_model.layers[0](input_p)
   l1_n = base_model.layers[0](input_n)
@@ -104,7 +109,7 @@ def make_model():
   l2_n = base_model.layers[1](l1_n)
   
   l3_a = base_model.layers[2](l2_a)
-  l3_p = base_model.layers[2](l2_p)
+  l3_p = base_model.layers[2](l2_p) 
   l3_n = base_model.layers[2](l2_n)
 
   l4_a = base_model.layers[3](l3_a)
@@ -155,7 +160,7 @@ def make_model():
       break
     layer.trainable = False
 
-  model.compile(optimizer = optimizers.Adam(), loss = triplet_loss(), metrics = [pd(), nd()])
+  model.compile(optimizer = optimizers.Adam(lr=1e-2), loss = triplet_loss(), metrics = [pd(), nd()])
 
   return model
 
@@ -208,7 +213,8 @@ def test_model():
 
   results = model.predict_generator(generator = test_generator_triplet(), steps = test_samples, verbose = 0)
 
-  beta = argN
+  N = argN
+  beta = N
   epsilon = 1e-6
 
   anchor = results[0::3]
